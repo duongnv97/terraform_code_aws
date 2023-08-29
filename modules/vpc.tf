@@ -69,13 +69,13 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_eip" "nat_gw_eip" {
-  count      = var.private_subnets == null || var.igw_enable_enable == false ? 0 : length(var.private_subnets)
+  count      = var.private_subnets == null || var.nat_gateways_enable == false ? 0 : length(var.private_subnets)
   vpc        = true
   depends_on = [aws_internet_gateway.igw]
 }
 
 resource "aws_nat_gateway" "vpc_nats_gw" {
-  count         = var.private_subnets == null || var.igw_enable_enable == false ? 0 : length(var.private_subnets)
+  count         = var.private_subnets == null || var.nat_gatewayse_enable == false ? 0 : length(var.private_subnets)
   subnet_id     = aws_subnet.public_subnet[count.index].id
   allocation_id = aws_eip.nat_gw_eip[count.index].id
   depends_on    = [aws_internet_gateway.igw]

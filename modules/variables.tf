@@ -52,13 +52,13 @@ variable "igw_enable" {
 
 }
 
-variable "igw_enable" {
-  description = "The boolen flag whether a Internet Gateway should be deployed"
-  type        = bool
-  default     = true
-}
+# variable "igw_enable" {
+#   description = "The boolen flag whether a Internet Gateway should be deployed"
+#   type        = bool
+#   default     = true
+# }
 
-variable "igw_enable_enable" {
+variable "nat_gateways_enable" {
   description = "The boolen flag whether a NAT Gateway should be deployed in each AZ"
   type        = bool
   default     = true
@@ -112,7 +112,7 @@ variable "cluster_log_retention_in_days" {
   type = number
 }
 
-variable "cluster_log_retention_in_days" {
+variable "cluster_name" {
   description =  "EKS cluster name"
   type = string
 }
@@ -220,4 +220,48 @@ variable "node_group_terraform_timeouts" {
     Leave list empty for defaults. Pass list with single object with attributes matching the `timeouts` block to configure it.
     Leave attribute values `null` to preserve individual defaults while setting others.
     EOT
+}
+
+#-------------------Redis---------
+variable "user_id" {
+  description = ""
+  type = string
+}
+
+variable "user_name" {
+  description = ""
+  type = string
+}
+
+variable "access_string" {
+  description = ""
+  type = string
+}
+
+
+variable "user_id_default" {
+  description = ""
+  type = string
+}
+
+variable "user_group_name" {
+  description = ""
+  type = string
+}
+
+variable "multi_az_enabled" {
+  description = ""
+  type = string
+}
+
+variable "cluster_mode_num_node_groups" {
+  description = ""
+  type = number
+  default = 0
+}
+
+variable "cluster_mode_nucluster_mode_replicas_per_node_groupm_node_groups" {
+  description = ""
+  type = number
+  default = 0
 }

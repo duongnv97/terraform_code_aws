@@ -21,32 +21,35 @@ resource "aws_kms_key" "kms_cmk" {
     "Version" : "2012-10-17",
     "Statement" : [
       {
-        "Sid" : "Allow Cloudwatch for cmk",
+        "Sid" : "Allow_CloudWatch_for_CMK",
         "Effect" : "Allow",
         "Principal" : {
           "Service" : [
-            "cloudwatch.amazon.com",
-            "event.amazonaws.com",
-            "*"
+            "cloudwatch.amazonaws.com",
+            "events.amazonaws.com"
           ]
         },
         "Action" : [
-          "kms:Decrypt", "kms:GenerateDataKey*",
-          "*"
-        ]
+          "kms:Decrypt", "kms:GenerateDataKey*"
+        ],
         "Resource" : "*"
       },
       {
-        "Sid" : "Enable IAM User Permissions",
+        "Sid" : "Enable IAM User Permissions for root user",
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+          "AWS" : [
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
+            "arn:aws:iam::920663725664:role/tcb-tfe-core-ec2-role",
+            "arn:aws:iam::920663725664:root"
+          ]
+
         },
         "Action" : "kms:*",
         "Resource" : "*"
       },
       {
-        "Sid" : "Allow access for Key Administrators",
+        "Sid" : "Allow service-linked role use of the CMK",
         "Effect" : "Allow",
         "Principal" : {
           "AWS" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
@@ -56,18 +59,18 @@ resource "aws_kms_key" "kms_cmk" {
           "kms:Decrypt",
           "kms:ReEncrypt*",
           "kms:GenerateDataKey*",
-          "kms:Describe*"
+          "kms:DescribeKey"
         ],
         "Resource" : "*"
       },
       {
-        "Sid" : "Allow attachment of perssistent resource",
+        "Sid" : "Allow attachment of persistent resources",
         "Effect" : "Allow",
         "Principal" : {
           "AWS" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
         },
         "Action" : "kms:CreateGrant",
-        "Resource" : "*"
+        "Resource" : "*",
         "Condition" : {
           "Bool" : {
             "kms:GrantIsForAWSResource" : "true"
@@ -75,26 +78,25 @@ resource "aws_kms_key" "kms_cmk" {
         }
       },
       {
-        "Sid" : "Allow usage by CW  Logs",
+        "Sid" : "Allow usage by CW Logs",
         "Effect" : "Allow",
         "Principal" : {
-          "AWServiceS" : "logs${data.aws_region.current.name}.amazonaws.com"
+          "Service" : "logs.${data.aws_region.current.name}.amazonaws.com"
         },
         "Action" : [
-          "kms:Encrypt",
-          "kms:Decrypt",
+          "kms:Encrypt*",
+          "kms:Decrypt*",
           "kms:ReEncrypt*",
           "kms:GenerateDataKey*",
           "kms:Describe*"
         ],
-        "Resource" : "*"
+        "Resource" : "*",
         "Condition" : {
           "ArnLike" : {
             "kms:EncryptionContext:aws:logs:arn" : "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:*"
           }
         }
-      }
-    ]
+    }]
   })
   tags = {
     "Name" = format("%s-kms", local.general_prefix)
