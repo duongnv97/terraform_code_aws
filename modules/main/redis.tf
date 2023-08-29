@@ -3,9 +3,6 @@ resource "aws_cloudwatch_log_group" "redis_slowlog" {
 
   retention_in_days = 7
   kms_key_id        = data.aws_kms_key.kms_cmk.arn
-  tags = {
-    "ExportToS3" = "true"
-  }
 }
 
 resource "aws_cloudwatch_log_group" "redis_enginelog" {
@@ -13,9 +10,6 @@ resource "aws_cloudwatch_log_group" "redis_enginelog" {
 
   retention_in_days = 7
   kms_key_id        = data.aws_kms_key.kms_cmk.arn
-  tags = {
-    "ExportToS3" = "true"
-  }
 }
 
 resource "aws_security_group" "cache" {
@@ -34,7 +28,7 @@ resource "aws_security_group" "cache" {
     from_port = 0
     to_port   = 0
     protocol  = "-1"
-    self      = true
+    cidr_blocks = var.vpc_cidr
   }
 
   # ingress {
@@ -74,7 +68,7 @@ resource "aws_elasticache_subnet_group" "cache" {
 #   override_special = "!#$%&*()-_=+[]{}<>:?"
 # }
 
-resource "aws_elasticache_user" "qrcode_user" {
+resource "aws_elasticache_user" "cache_user" {
 
   user_id              = var.user_id
   user_name            = var.user_name
@@ -84,7 +78,7 @@ resource "aws_elasticache_user" "qrcode_user" {
   no_password_required = "false"
 }
 
-resource "aws_elasticache_user" "qrcode_user_default" {
+resource "aws_elasticache_user" "cache_user_default" {
 
   user_id              = var.user_id_default
   user_name            = "default"
@@ -95,23 +89,18 @@ resource "aws_elasticache_user" "qrcode_user_default" {
 }
 
 
-resource "aws_elasticache_user_group" "qrcode_group" {
+resource "aws_elasticache_user_group" "cache_group" {
   engine        = "REDIS"
   user_group_id = var.user_group_name
-  user_ids      = [aws_elasticache_user.qrcode_user_default.user_id]
-
-  lifecycle {
-    ignore_changes = [user_ids]
-  }
-
+  user_ids      = [aws_elasticache_user.cache_user_default.user_id]
   depends_on = [
-    aws_elasticache_user.qrcode_user_default
+    aws_elasticache_user.cache_user_default
   ]
 }
 
-resource "aws_elasticache_user_group_association" "qrcode" {
-  user_group_id = aws_elasticache_user_group.qrcode_group.user_group_id
-  user_id       = aws_elasticache_user.qrcode_user.user_id
+resource "aws_elasticache_user_group_association" "cache_association" {
+  user_group_id = aws_elasticache_user_group.cache_group.user_group_id
+  user_id       = aws_elasticache_user.cache_user.user_id
 }
 
 
@@ -119,7 +108,7 @@ resource "aws_elasticache_user_group_association" "qrcode" {
 resource "aws_elasticache_replication_group" "redis" {
 
   replication_group_id = format("%s-cache", local.general_prefix)
-  description          = "Redis cache for Qrcode collection"
+  description          = "Redis cache"
   node_type            = "cache.t4g.medium"
   # num_cache_clusters   = "2"
   multi_az_enabled     = var.multi_az_enabled
@@ -135,7 +124,7 @@ resource "aws_elasticache_replication_group" "redis" {
   kms_key_id                 = data.aws_kms_key.kms_cmk.arn
 
   transit_encryption_enabled = true
-  user_group_ids             = [aws_elasticache_user_group.qrcode_group.user_group_id]
+  user_group_ids             = [aws_elasticache_user_group.cache_group.user_group_id]
 
   subnet_group_name  = aws_elasticache_subnet_group.cache.name
   security_group_ids = [aws_security_group.cache.id]
