@@ -19,6 +19,22 @@ variable "tags" {
   default     = {}
 }
 
+
+#------variable for rds---------------#
+variable "db_allocate_storage" {
+  description = "RDS allocate storage"
+  type        = number
+  default = 20
+}
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+}
+variable "db_multi_az_enabled" {
+  description = "RDS multi AZ"
+  type        = string
+}
+
 #------variable for vpc---------------#
 variable "vpc_cidr" {
   description = "Application prefix for all AWS Resources"
