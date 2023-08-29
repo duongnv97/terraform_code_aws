@@ -1,5 +1,5 @@
 module "main" {
-  source = "../modules"
+  source = "../../modules"
   master_prefix = "vn"
   env_prefix = "dev"
   app_prefix = "retail"
