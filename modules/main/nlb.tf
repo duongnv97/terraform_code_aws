@@ -14,7 +14,7 @@ resource "aws_lb" "nlb" {
   load_balancer_type = "network"
 
 
-  subnets = var.inbound_public_subnet_ids
+  subnets = aws_subnet.public_subnet[*].id
 
   enable_cross_zone_load_balancing = true
   enable_deletion_protection       = false
@@ -33,7 +33,7 @@ resource "aws_lb_target_group" "nlb_tgrp" {
   target_type = "ip"
 
   # inbound vpc id
-  vpc_id = var.inbound_vpc_id
+  vpc_id = aws_vpc.vpc.id
 
   proxy_protocol_v2  = true
   preserve_client_ip = false

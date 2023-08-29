@@ -1,7 +1,7 @@
 module "main" {
   source = "../modules"
   master_prefix = "vn"
-  env_prefix = "prd"
+  env_prefix = "dev"
   app_prefix = "retail"
 
 #------------ VPC----------
@@ -32,13 +32,13 @@ module "main" {
   cluster_service_ipv4_cidr = "172.20.0.0/16"
   cluster_tags = var.cluster_tags
 
-  #-------------------EKS Node-----------
+#-------------------EKS Node-----------
   node_volume_size = 30
   instance_type = "t3.medium"
   desired_size = 2
   max_size     = 2
   min_size     = 2
-
+#--------------- Redis------------------
   user_id = "vn-redis"
   user_name = "vn-redis"
   user_id_default = "vn-default"
@@ -47,4 +47,13 @@ module "main" {
   multi_az_enabled =  true
   cluster_mode_num_node_groups = 1
   cluster_mode_replicas_per_node_group = 1
+#-----------------------RDS----------------
+db_instance_class = "t3.micro"
+db_multi_az_enabled = false
+
+#----------------------NLB------------------
+#----------------------cloudfront-----------
+
 }
+
+
